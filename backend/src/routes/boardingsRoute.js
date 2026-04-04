@@ -12,6 +12,10 @@ router.route('/:id/reviews')
   .get(protectOptional, boardingsController.getReviews)
   .post(protect, restrictTo('Student'), boardingsController.addReview);
 
+// Bookmarks routes
+router.get('/saved/bookmarks', protect, restrictTo('Student'), boardingsController.getSavedBoardings);
+router.post('/:id/bookmark', protect, restrictTo('Student'), boardingsController.toggleBookmark);
+
 // View count
 router.post('/:id/views', boardingsController.incrementViewCount);
 

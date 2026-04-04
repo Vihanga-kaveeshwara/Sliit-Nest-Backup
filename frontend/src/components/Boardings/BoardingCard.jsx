@@ -1,11 +1,39 @@
-import React, { useState, useEffect } from 'react';
-import { FiUsers, FiEye, FiStar } from 'react-icons/fi';
+import React, { useState, useEffect, useContext } from 'react';
+import { FiUsers, FiEye, FiStar, FiHeart } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
+import { AuthContext } from '../../context/AuthContext';
+import api from '../../api/axiosConfig';
+import { toast } from 'react-toastify';
 
 const BoardingCard = ({ boarding, isSelected, onToggleCompare }) => {
+  const { user, isAuthenticated, setUser } = useContext(AuthContext);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isHovering, setIsHovering] = useState(false);
   const [showAllFacilities, setShowAllFacilities] = useState(false);
+  const [loadingBookmark, setLoadingBookmark] = useState(false);
+
+  const isBookmarked = user?.bookmarks?.includes(boarding._id);
+
+  const handleBookmarkToggle = async (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated || user?.role !== 'Student') {
+      toast.info('Please log in as a student to save boardings');
+      return;
+    }
+
+    setLoadingBookmark(true);
+    try {
+      const { data } = await api.post(`/boardings/${boarding._id}/bookmark`);
+      if (data.success) {
+        setUser({ ...user, bookmarks: data.bookmarks });
+        // Optional: toast.success(data.message);
+      }
+    } catch (err) {
+      toast.error('Failed to update bookmark');
+    } finally {
+      setLoadingBookmark(false);
+    }
+  };
 
   useEffect(() => {
     let interval;
@@ -88,10 +116,28 @@ const BoardingCard = ({ boarding, isSelected, onToggleCompare }) => {
       </div>
 
       <div className="p-3.5 flex flex-col flex-1">
-        <h3 className="font-bold text-gray-900 text-sm mb-0.5 truncate" title={boarding.title}>
-          {boarding.title || 'Untitled Boarding'}
-        </h3>
-        <p className="text-gray-500 text-xs mb-2">{boarding.accommodationType || 'Any Type'}</p>
+        <div className="flex justify-between items-start">
+          <div className="flex-1 min-w-0 pr-2">
+            <h3 className="font-bold text-gray-900 text-sm mb-0.5 truncate" title={boarding.title}>
+              {boarding.title || 'Untitled Boarding'}
+            </h3>
+            <p className="text-gray-500 text-xs mb-2">{boarding.accommodationType || 'Any Type'}</p>
+          </div>
+          
+          {/* Bookmark Icon */}
+          <button
+            onClick={handleBookmarkToggle}
+            disabled={loadingBookmark}
+            className={`flex-shrink-0 p-1.5 rounded-full transition-all shadow-sm border ${
+              isBookmarked 
+                ? 'bg-rose-50 text-rose-500 hover:bg-rose-100 border-rose-200' 
+                : 'bg-gray-50 text-gray-400 hover:text-rose-500 hover:bg-rose-50 border-gray-200'
+            }`}
+            title="Save Boarding"
+          >
+            <FiHeart size={16} className={isBookmarked ? 'fill-current' : ''} />
+          </button>
+        </div>
 
         <p className="text-blue-600 font-bold text-base mb-2">
           Rs. {boarding.monthlyRent ? Number(boarding.monthlyRent).toLocaleString() : '0'}

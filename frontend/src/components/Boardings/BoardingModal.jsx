@@ -1,17 +1,40 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { FiX, FiMapPin, FiUsers, FiCheckCircle, FiStar, FiEye, FiChevronLeft, FiChevronRight } from 'react-icons/fi';
+import { FiX, FiMapPin, FiUsers, FiCheckCircle, FiStar, FiEye, FiChevronLeft, FiChevronRight, FiHeart } from 'react-icons/fi';
 import { FaWhatsapp } from 'react-icons/fa';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../api/axiosConfig';
 import { toast } from 'react-toastify';
 
 const BoardingModal = ({ boarding, onClose, onReviewAdded }) => {
-  const { user, isAuthenticated } = useContext(AuthContext);
+  const { user, isAuthenticated, setUser } = useContext(AuthContext);
   const [reviews, setReviews] = useState([]);
   const [newRating, setNewRating] = useState(0);
   const [newComment, setNewComment] = useState('');
   const [loading, setLoading] = useState(false);
+  const [loadingBookmark, setLoadingBookmark] = useState(false);
   const [currentImg, setCurrentImg] = useState(0);
+
+  const isBookmarked = user?.bookmarks?.includes(boarding._id);
+
+  const handleBookmarkToggle = async (e) => {
+    e.stopPropagation();
+    if (!isAuthenticated || user?.role !== 'Student') {
+      toast.info('Please log in as a student to save boardings');
+      return;
+    }
+
+    setLoadingBookmark(true);
+    try {
+      const { data } = await api.post(`/boardings/${boarding._id}/bookmark`);
+      if (data.success) {
+        setUser({ ...user, bookmarks: data.bookmarks });
+      }
+    } catch (err) {
+      toast.error('Failed to update bookmark');
+    } finally {
+      setLoadingBookmark(false);
+    }
+  };
 
   useEffect(() => {
     fetchReviews();
@@ -110,6 +133,22 @@ const BoardingModal = ({ boarding, onClose, onReviewAdded }) => {
             ) : (
               <div className="w-full h-full flex items-center justify-center text-gray-400 text-xs">No Image</div>
             )}
+            
+            {/* Bookmark Icon */}
+            {user?.role === 'Student' && (
+              <button
+                onClick={handleBookmarkToggle}
+                disabled={loadingBookmark}
+                className={`absolute top-3 left-3 z-20 p-2 rounded-full backdrop-blur-md transition-all shadow-sm border border-gray-200/50 ${
+                  isBookmarked 
+                    ? 'bg-rose-50 text-rose-500 hover:bg-rose-100 border-rose-200' 
+                    : 'bg-white/80 text-gray-500 hover:text-rose-500 hover:bg-white'
+                }`}
+              >
+                <FiHeart size={20} className={isBookmarked ? 'fill-current' : ''} />
+              </button>
+            )}
+
             <div className="absolute bottom-3 left-3 bg-gray-900/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-lg shadow">
               <p className="text-[10px] text-gray-300 font-medium">Monthly Rent</p>
               <p className="text-base font-bold">Rs. {boarding.monthlyRent?.toLocaleString()}</p>

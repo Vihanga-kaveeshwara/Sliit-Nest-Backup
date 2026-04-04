@@ -138,3 +138,70 @@ exports.incrementViewCount = async (req, res, next) => {
     next(error);
   }
 };
+
+// @desc    Toggle bookmark for a boarding
+// @route   POST /api/boardings/:id/bookmark
+// @access  Private/Student
+exports.toggleBookmark = async (req, res, next) => {
+  try {
+    const listingId = req.params.id;
+    const user = await User.findById(req.user.id);
+    
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    const listing = await Listing.findById(listingId);
+    if (!listing) {
+      return res.status(404).json({ success: false, message: 'Listing not found' });
+    }
+
+    const isBookmarked = user.bookmarks.includes(listingId);
+
+    if (isBookmarked) {
+      // Remove bookmark
+      user.bookmarks = user.bookmarks.filter(id => id.toString() !== listingId.toString());
+    } else {
+      // Add bookmark
+      user.bookmarks.push(listingId);
+    }
+
+    await user.save({ validateBeforeSave: false });
+
+    res.status(200).json({ 
+      success: true, 
+      message: isBookmarked ? 'Bookmark removed' : 'Bookmark added',
+      isBookmarked: !isBookmarked,
+      bookmarks: user.bookmarks
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// @desc    Get user's bookmarked boardings
+// @route   GET /api/boardings/saved
+// @access  Private/Student
+exports.getSavedBoardings = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id).populate({
+      path: 'bookmarks',
+      match: { status: 'Approved' } // Optional: only return approved ones
+    });
+
+    if (!user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Filter out any nulls in case a bookmarked listing was deleted
+    const validBookmarks = user.bookmarks.filter(b => b != null);
+
+    res.status(200).json({ 
+      success: true, 
+      count: validBookmarks.length,
+      data: validBookmarks 
+    });
+  } catch (error) {
+    next(error);
+  }
+};

@@ -28,6 +28,7 @@ import CreateRoommatePost from './pages/Roommates/CreateRoommatePost';
 import EditRoommatePost from './pages/Roommates/EditRoommatePost';
 import RoommateProfile from './pages/Roommates/RoommateProfile';
 import MyMatches from './pages/Roommates/MyMatches';
+import SavedBoardings from './pages/Boardings/SavedBoardings';
 
 function App() {
   return (
@@ -58,6 +59,8 @@ function App() {
         <Route path="/roommates/:id" element={<RoommateProfile />} />
 
         {/* Protected Dashboard Routes */}
+        <Route path="/saved-boardings" element={<ProtectedRoute><SavedBoardings /></ProtectedRoute>} />
+        
         <Route element={<ProtectedRoute><MainLayout /></ProtectedRoute>}>
           
           <Route path="/dashboard" element={

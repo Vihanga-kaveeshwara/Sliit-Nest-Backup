@@ -36,7 +36,8 @@ const sendTokenResponse = (user, statusCode, res) => {
         age: user.age,
         email: user.email,
         role: user.role,
-        isVerified: user.isVerified
+        isVerified: user.isVerified,
+        bookmarks: user.bookmarks || []
       }
     });
 };
@@ -244,7 +245,8 @@ exports.getMe = async (req, res, next) => {
         age: req.user.age,
         email: req.user.email,
         role: req.user.role,
-        isVerified: req.user.isVerified
+        isVerified: req.user.isVerified,
+        bookmarks: req.user.bookmarks || []
       }
     });
   } catch (error) {

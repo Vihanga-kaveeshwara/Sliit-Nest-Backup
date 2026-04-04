@@ -1,6 +1,6 @@
 import React, { useContext, useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
-import { FiUser, FiChevronDown, FiLogOut, FiUsers, FiBell } from 'react-icons/fi';
+import { FiUser, FiChevronDown, FiLogOut, FiUsers, FiBell, FiHeart } from 'react-icons/fi';
 import { AuthContext } from '../../context/AuthContext';
 import api from '../../api/axiosConfig';
 
@@ -129,6 +129,13 @@ const PublicNavbar = ({ activePage }) => {
                   className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition"
                 >
                   <FiUsers size={14} /> My Matches
+                </button>
+                <div className="border-t border-gray-100 my-1" />
+                <button
+                  onClick={() => { setShowDropdown(false); navigate('/saved-boardings'); }}
+                  className="w-full text-left px-4 py-2.5 text-sm text-gray-700 hover:bg-gray-50 flex items-center gap-2 transition"
+                >
+                  <FiHeart size={14} /> Saved Boardings
                 </button>
                 <div className="border-t border-gray-100 my-1" />
                 <button
