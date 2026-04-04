@@ -20,9 +20,9 @@ const EditListing = () => {
       facilities: [],
     }
   });
-  
+
   const [loading, setLoading] = useState(true);
-  
+
   // existingPhotos stores paths to images on the server e.g., "/uploads/..."
   const [existingPhotos, setExistingPhotos] = useState([]);
   // photosArr stores objects like: { file: File, url: 'blob:...' } for NEW photos
@@ -49,7 +49,7 @@ const EditListing = () => {
           description: listing.description || '',
           facilities: listing.facilities || []
         });
-        
+
         // existing photos format is `/uploads/...`, we store them directly
         setExistingPhotos(listing.photos || []);
       } catch (error) {
@@ -84,7 +84,7 @@ const EditListing = () => {
     const newArray = photosArr.filter((_, i) => i !== index);
     setPhotosArr(newArray);
   };
-  
+
   const removeExistingPhoto = (index) => {
     const newArray = existingPhotos.filter((_, i) => i !== index);
     setExistingPhotos(newArray);
@@ -95,7 +95,7 @@ const EditListing = () => {
       toast.error('Please add at least 1 photo.');
       return;
     }
-    
+
     // Create FormData for multipart form
     const formData = new FormData();
     formData.append('title', data.title);
@@ -105,15 +105,15 @@ const EditListing = () => {
     formData.append('contactNumber', data.contactNumber);
     formData.append('address', data.address);
     formData.append('description', data.description || '');
-    
+
     if (data.facilities) {
       data.facilities.forEach(f => formData.append('facilities[]', f));
     }
-    
+
     // Append existing photos
     if (existingPhotos.length > 0) {
       existingPhotos.forEach(photoPath => {
-         formData.append('existingPhotos', photoPath);
+        formData.append('existingPhotos', photoPath);
       });
     } else {
       // Explicitly show we removed all existing photos
@@ -140,11 +140,11 @@ const EditListing = () => {
     e.preventDefault();
     setIsPreviewOpen(true);
   };
-  
-  const getFullURL = (path) => path.startsWith('http') ? path : `http://localhost:5001${path}`;
+
+  const getFullURL = (path) => path.startsWith('http') ? path : `http://localhost:5000${path}`;
 
   const allPreviewPhotos = [
-    ...existingPhotos.map(p => getFullURL(p)), 
+    ...existingPhotos.map(p => getFullURL(p)),
     ...photosArr.map(p => p.url)
   ];
 
@@ -164,12 +164,12 @@ const EditListing = () => {
         {/* Basic Information */}
         <div className="bg-white p-8 rounded-xl border border-gray-200 shadow-sm space-y-6">
           <h2 className="text-xl font-bold text-gray-800 border-b pb-2">Basic Information</h2>
-          
+
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Listing Title *</label>
-            <input 
-              type="text" 
-              placeholder="e.g., Cozy Single Room near University" 
+            <input
+              type="text"
+              placeholder="e.g., Cozy Single Room near University"
               className={`w-full p-3 border rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 ${errors.title ? 'border-red-500 focus:ring-red-200' : 'border-gray-200 focus:ring-blue-100 focus:border-blue-400'}`}
               {...register('title', { required: 'Listing Title is required' })}
             />
@@ -179,7 +179,7 @@ const EditListing = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Accommodation Type *</label>
-              <select 
+              <select
                 className={`w-full p-3 border rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 ${errors.accommodationType ? 'border-red-500' : 'border-gray-200 focus:ring-blue-100'}`}
                 {...register('accommodationType', { required: 'Type is required' })}
               >
@@ -197,7 +197,7 @@ const EditListing = () => {
 
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Capacity (people) *</label>
-              <input 
+              <input
                 type="number" min="1"
                 className={`w-full p-3 border rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 ${errors.capacity ? 'border-red-500' : 'border-gray-200 focus:ring-blue-100'}`}
                 {...register('capacity', { required: 'Capacity is required', min: 1 })}
@@ -209,20 +209,20 @@ const EditListing = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">Monthly Rent (Rs.) *</label>
-              <input 
+              <input
                 type="number" placeholder="e.g., 15000" min="0"
                 className={`w-full p-3 border rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 ${errors.monthlyRent ? 'border-red-500' : 'border-gray-200 focus:ring-blue-100'}`}
-                {...register('monthlyRent', { required: 'Monthly rent is required', min: { value: 100, message: 'Need to show reasonable price' }})}
+                {...register('monthlyRent', { required: 'Monthly rent is required', min: { value: 100, message: 'Need to show reasonable price' } })}
               />
               {errors.monthlyRent && <p className="text-red-500 text-xs mt-1">{errors.monthlyRent.message}</p>}
             </div>
 
             <div>
               <label className="block text-sm font-bold text-gray-700 mb-2">WhatsApp Number *</label>
-              <input 
+              <input
                 type="text" placeholder="e.g., +94771234567 or 0771234567"
                 className={`w-full p-3 border rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 ${errors.contactNumber ? 'border-red-500' : 'border-gray-200 focus:ring-blue-100'}`}
-                {...register('contactNumber', { 
+                {...register('contactNumber', {
                   required: 'WhatsApp number is required',
                   pattern: {
                     value: /^(?:\+94|0)[7]\d{8}$/,
@@ -236,7 +236,7 @@ const EditListing = () => {
 
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Address *</label>
-            <input 
+            <input
               type="text" placeholder="Full address"
               className={`w-full p-3 border rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 ${errors.address ? 'border-red-500' : 'border-gray-200 focus:ring-blue-100'}`}
               {...register('address', { required: 'Address is required' })}
@@ -246,7 +246,7 @@ const EditListing = () => {
 
           <div>
             <label className="block text-sm font-bold text-gray-700 mb-2">Description</label>
-            <textarea 
+            <textarea
               placeholder="Describe your boarding, nearby facilities, rules, etc." rows="4"
               className="w-full p-3 border border-gray-200 rounded-lg bg-gray-50 focus:bg-white focus:outline-none focus:ring-2 focus:ring-blue-100 focus:border-blue-400"
               {...register('description')}
@@ -260,9 +260,9 @@ const EditListing = () => {
           <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
             {FACILITIES_LIST.map((facility) => (
               <label key={facility} className="flex items-center gap-3 cursor-pointer">
-                <input 
-                  type="checkbox" 
-                  value={facility} 
+                <input
+                  type="checkbox"
+                  value={facility}
                   {...register('facilities')}
                   className="w-5 h-5 text-blue-600 border-gray-300 rounded focus:ring-blue-500"
                 />
@@ -285,12 +285,12 @@ const EditListing = () => {
           </div>
 
           <div className="flex gap-2 items-center">
-            <input 
+            <input
               type="file" multiple accept="image/*"
               id="file-upload" className="hidden"
               onChange={handleFileChange}
             />
-            <label 
+            <label
               htmlFor="file-upload"
               className="bg-gray-100 hover:bg-gray-200 cursor-pointer text-gray-700 font-bold py-3 px-6 rounded-lg transition border border-gray-200 text-center flex-1"
             >
@@ -326,15 +326,15 @@ const EditListing = () => {
 
         {/* Form Actions */}
         <div className="flex flex-col md:flex-row gap-4 pt-4">
-          <button 
-            type="button" 
+          <button
+            type="button"
             onClick={handlePreviewBtnClick}
             className="flex-1 border-2 border-gray-200 text-gray-700 font-bold py-4 rounded-xl hover:bg-gray-50 transition"
           >
             &#128065; Preview
           </button>
-          <button 
-            type="submit" 
+          <button
+            type="submit"
             className="flex-[2] bg-blue-600 text-white font-bold py-4 rounded-xl shadow-lg hover:bg-blue-700 transition"
           >
             Save Changes
@@ -343,34 +343,34 @@ const EditListing = () => {
       </form>
 
       {/* Mounting the Preview Modal */}
-      <PreviewModal 
-        isOpen={isPreviewOpen} 
-        onClose={() => setIsPreviewOpen(false)} 
+      <PreviewModal
+        isOpen={isPreviewOpen}
+        onClose={() => setIsPreviewOpen(false)}
         data={{
-          ...currentFormValues, 
+          ...currentFormValues,
           // Extract preview URLs for the modal 
           photos: allPreviewPhotos
-        }} 
+        }}
       />
 
       {/* Image Enlarge Modal */}
       {enlargedImage && (
-        <div 
-          className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-90 cursor-pointer" 
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center bg-black bg-opacity-90 cursor-pointer"
           onClick={() => setEnlargedImage(null)}
         >
-          <button 
+          <button
             type="button"
-            className="absolute top-6 right-8 text-white hover:text-gray-300 text-4xl font-bold" 
+            className="absolute top-6 right-8 text-white hover:text-gray-300 text-4xl font-bold"
             onClick={(e) => { e.stopPropagation(); setEnlargedImage(null); }}
           >
             &times;
           </button>
-          <img 
-            src={enlargedImage} 
-            alt="Enlarged view" 
-            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl" 
-            onClick={(e) => e.stopPropagation()} 
+          <img
+            src={enlargedImage}
+            alt="Enlarged view"
+            className="max-w-[90vw] max-h-[90vh] object-contain rounded-lg shadow-2xl"
+            onClick={(e) => e.stopPropagation()}
           />
         </div>
       )}

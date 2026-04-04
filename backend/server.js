@@ -11,6 +11,7 @@ const roommateRoutes = require('./src/routes/roommateRoutes');
 const connectionRoutes = require('./src/routes/connectionRoutes');
 const paymentRoutes = require('./src/routes/paymentRoutes');
 const adminRoutes = require('./src/routes/adminRoutes');
+const boardingsRoute = require('./src/routes/boardingsRoute');
 
 // Connect Database
 connectDB();
@@ -39,6 +40,7 @@ app.use('/api/roommates', roommateRoutes);
 app.use('/api/connections', connectionRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/admin', adminRoutes);
+app.use('/api/boardings', boardingsRoute);
 
 // Generic Root
 app.get('/', (req, res) => {

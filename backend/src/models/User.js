@@ -66,6 +66,10 @@ const userSchema = new mongoose.Schema(
     },
     verificationCode: String,
     verificationCodeExpires: Date,
+    bookmarks: [{
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Listing',
+    }],
   },
   { timestamps: true }
 );

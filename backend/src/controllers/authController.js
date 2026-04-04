@@ -36,7 +36,8 @@ const sendTokenResponse = (user, statusCode, res) => {
         age: user.age,
         email: user.email,
         role: user.role,
-        isVerified: user.isVerified
+        isVerified: user.isVerified,
+        bookmarks: user.bookmarks || []
       }
     });
 };
@@ -227,10 +228,26 @@ exports.logoutUser = (req, res, next) => {
 // @access  Private
 exports.getMe = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
+    // req.user is already populated by the protect middleware
+    if (!req.user) {
+      return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
     res.status(200).json({
       success: true,
-      data: user
+      data: {
+        _id: req.user._id,
+        firstName: req.user.firstName,
+        lastName: req.user.lastName,
+        phoneNumber: req.user.phoneNumber,
+        address: req.user.address,
+        gender: req.user.gender,
+        age: req.user.age,
+        email: req.user.email,
+        role: req.user.role,
+        isVerified: req.user.isVerified,
+        bookmarks: req.user.bookmarks || []
+      }
     });
   } catch (error) {
     next(error);

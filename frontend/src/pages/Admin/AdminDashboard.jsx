@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { FiGrid, FiUsers, FiCreditCard, FiEye, FiRefreshCw, FiCheck, FiX } from 'react-icons/fi';
 import api from '../../api/axiosConfig';
 import { toast } from 'react-toastify';
+import BoardingModal from '../../components/Boardings/BoardingModal';
 
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState('listings');
@@ -9,6 +10,8 @@ const AdminDashboard = () => {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [selectedListing, setSelectedListing] = useState(null);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [stats, setStats] = useState([
     { name: 'Total Listings', value: '0', icon: FiGrid, color: 'text-blue-600', bg: 'bg-blue-100' },
     { name: 'Verified Students', value: '0', icon: FiUsers, color: 'text-green-600', bg: 'bg-green-100' },
@@ -100,6 +103,11 @@ const AdminDashboard = () => {
     } catch (error) {
       toast.error(error.response?.data?.message || 'Failed to reject payment');
     }
+  };
+
+  const handleViewListing = (listing) => {
+    setSelectedListing(listing);
+    setIsModalOpen(true);
   };
 
   const handleApproveListing = async (listingId) => {
@@ -304,6 +312,12 @@ const AdminDashboard = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <button 
+                          onClick={() => handleViewListing(listing)}
+                          className="text-blue-600 hover:text-blue-900 mr-4 flex items-center gap-1"
+                        >
+                          <FiEye /> View
+                        </button>
+                        <button 
                           onClick={() => handleApproveListing(listing._id)}
                           className="text-green-600 hover:text-green-900 mr-4 flex items-center gap-1"
                         >
@@ -370,6 +384,18 @@ const AdminDashboard = () => {
       <div className="mt-6">
         {renderTabContent()}
       </div>
+
+      {/* Viewing details modal */}
+      {isModalOpen && selectedListing && (
+        <BoardingModal
+          boarding={selectedListing}
+          onClose={() => {
+            setIsModalOpen(false);
+            setSelectedListing(null);
+          }}
+          onReviewAdded={fetchListings}
+        />
+      )}
     </div>
   );
 };
