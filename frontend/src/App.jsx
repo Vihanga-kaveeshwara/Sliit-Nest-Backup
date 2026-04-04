@@ -11,6 +11,7 @@ import { RoleRoute } from './components/Routing/RoleRoute';
 // Pages
 import Landing from './pages/Landing';
 import About from './pages/About';
+import SearchBoardings from './pages/Boardings/SearchBoardings';
 import Dashboard from './pages/Dashboard';
 import MyListings from './pages/MyListings';
 import AddListing from './pages/AddListing';
@@ -47,6 +48,7 @@ function App() {
         {/* Public Pages */}
         <Route path="/" element={<Landing />} />
         <Route path="/about" element={<About />} />
+        <Route path="/search" element={<SearchBoardings />} />
 
         {/* Roommate Finder Pages */}
         <Route path="/roommates" element={<RoommateSearch />} />
@@ -82,9 +84,7 @@ function App() {
             <RoleRoute roles={['Admin']}><AdminDashboard /></RoleRoute>
           } />
 
-          <Route path="search" element={
-            <RoleRoute roles={['Student']}><div>TODO: Search Boardings</div></RoleRoute>
-          } />
+
 
           <Route path="profile" element={<Profile />} />
 

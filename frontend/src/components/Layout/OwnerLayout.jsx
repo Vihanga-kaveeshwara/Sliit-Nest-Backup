@@ -1,13 +1,15 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Outlet, NavLink, useNavigate } from 'react-router-dom';
 import { FiHome, FiList, FiLogOut, FiUser } from 'react-icons/fi';
+import { AuthContext } from '../../context/AuthContext';
 
 const OwnerLayout = () => {
+  const { user, logout } = useContext(AuthContext);
   const navigate = useNavigate();
 
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    navigate('/login'); // Assuming a login exists elsewhere
+  const handleLogout = async () => {
+    await logout();
+    navigate('/login');
   };
 
   return (
@@ -49,17 +51,19 @@ const OwnerLayout = () => {
 
         <div className="p-4 border-t border-gray-200">
           <div className="flex items-center gap-3 mb-4 px-4">
-            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-              <FiUser />
+            <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center text-blue-600 font-bold overflow-hidden shadow-inner">
+               {user?.firstName ? user.firstName.charAt(0).toUpperCase() : <FiUser />}
             </div>
             <div>
-              <p className="text-sm font-medium text-gray-800">John doe</p>
-              <p className="text-xs text-gray-500">Owner</p>
+              <p className="text-sm font-medium text-gray-800 truncate max-w-[120px]">
+                {user ? `${user.firstName} ${user.lastName}` : 'Owner'}
+              </p>
+              <p className="text-xs text-gray-500">{user?.role || 'Owner'}</p>
             </div>
           </div>
           <button 
             onClick={handleLogout}
-            className="flex items-center gap-3 px-4 py-2 w-full text-left text-gray-600 hover:text-red-600 transition-colors"
+            className="flex items-center gap-3 px-4 py-2 w-full text-left font-medium text-gray-600 hover:text-red-600 transition-colors"
           >
             <FiLogOut /> Logout
           </button>

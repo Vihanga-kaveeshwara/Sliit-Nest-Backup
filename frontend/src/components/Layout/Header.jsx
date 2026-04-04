@@ -4,7 +4,7 @@ import { AuthContext } from '../../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 const Header = () => {
-  const { user, logout } = useContext(AuthContext);
+  const { user, loading, logout } = useContext(AuthContext);
   const navigate = useNavigate();
   const [showDropdown, setShowDropdown] = useState(false);
 
@@ -31,21 +31,21 @@ const Header = () => {
         {/* User Profile Dropdown */}
         <div className="relative">
           <button 
-            className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded-lg transition-colors"
+            className="flex items-center gap-2 hover:bg-gray-50 p-1 rounded-lg transition-colors group"
             onClick={() => setShowDropdown(!showDropdown)}
           >
-            <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center text-blue-600">
-              <FiUser size={16} />
+            <div className="w-8 h-8 bg-[#0b2b56] rounded-full flex items-center justify-center text-white font-bold text-sm shrink-0 shadow-inner">
+               {user?.firstName ? user.firstName.charAt(0).toUpperCase() : <FiUser size={14} />}
             </div>
             <div className="text-left hidden sm:block">
-              <p className="text-sm font-medium text-gray-800 leading-tight">
-                {user?.firstName ? `${user.firstName} ${user.lastName}` : 'Guest'}
+              <p className="text-sm font-bold text-gray-800 leading-tight">
+                {user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() || 'Owner' : (loading ? 'Loading...' : 'Guest')}
               </p>
-              <p className="text-xs text-gray-500 leading-tight">
-                {user?.role}
+              <p className="text-xs text-gray-400 font-medium leading-tight">
+                {user?.role || (loading ? 'Please wait' : 'User')}
               </p>
             </div>
-            <FiChevronDown className="text-gray-400" />
+            <FiChevronDown className="text-gray-400 group-hover:text-gray-600 transition-colors" size={14} />
           </button>
 
           {showDropdown && (
