@@ -5,7 +5,7 @@ import {
   FiCreditCard, FiSkipForward, FiPlus, FiList, FiTrendingUp,
   FiZap, FiChevronRight, FiDollarSign, FiActivity,
   FiPackage, FiBarChart2, FiSettings, FiBell, FiSearch,
-  FiGrid, FiStar, FiArrowUpRight
+  FiGrid, FiStar, FiArrowUpRight, FiX
 } from 'react-icons/fi';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../api/axiosConfig';
@@ -47,7 +47,7 @@ const StatCard = ({ label, value, icon, bg, iconBg, iconColor, valueColor, borde
 
     <div className="flex items-start justify-between relative z-10">
       <div className="flex flex-col gap-1">
-        <p className="text-xs font-bold tracking-widest uppercase" style={{ color: '#94a3b8' }}>{label}</p>
+        <p className="text-xs font-bold tracking-widest uppercase text-gray-500">{label}</p>
         {badge && (
           <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full"
             style={{ background: `${iconColor}18`, color: iconColor }}>
@@ -60,7 +60,7 @@ const StatCard = ({ label, value, icon, bg, iconBg, iconColor, valueColor, borde
         {icon}
       </div>
     </div>
-    <p className="text-4xl font-extrabold relative z-10 tracking-tight font-display" style={{ color: valueColor }}>
+    <p className="text-4xl relative z-10 tracking-tight font-bold" style={{ color: valueColor }}>
       <Counter value={value} />
     </p>
   </motion.div>
@@ -96,10 +96,10 @@ const ActionBtn = ({ to, icon, label, desc, color, bg, delay }) => (
         {icon}
       </div>
       <div className="min-w-0">
-        <p className="text-sm font-bold" style={{ color: '#1e293b' }}>{label}</p>
-        <p className="text-xs font-medium" style={{ color: '#94a3b8' }}>{desc}</p>
+        <p className="text-sm font-bold text-gray-800">{label}</p>
+        <p className="text-xs font-medium text-gray-500">{desc}</p>
       </div>
-      <FiChevronRight size={13} className="ml-auto shrink-0 transition-colors" style={{ color: '#cbd5e1' }} />
+      <FiChevronRight size={13} className="ml-auto shrink-0 transition-colors text-gray-400" />
     </Link>
   </motion.div>
 );
@@ -111,6 +111,9 @@ const Dashboard = () => {
   const [recentListings, setRecentListings] = useState([]);
   const [trialStatuses, setTrialStatuses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const navigate = useNavigate();
 
   const ownerName = user ? `${user.firstName || ''} ${user.lastName || ''}`.trim() : 'Owner';
@@ -141,6 +144,25 @@ const Dashboard = () => {
 
   const handlePaymentClick = (id) => navigate('/listings/payment', { state: { listingId: id } });
 
+  const handleSearch = (query) => {
+    setSearchQuery(query);
+    
+    if (!query.trim()) {
+      setSearchResults([]);
+      return;
+    }
+
+    const filtered = recentListings.filter(listing => 
+      listing.title?.toLowerCase().includes(query.toLowerCase()) ||
+      listing.accommodationType?.toLowerCase().includes(query.toLowerCase()) ||
+      listing.description?.toLowerCase().includes(query.toLowerCase()) ||
+      listing.location?.toLowerCase().includes(query.toLowerCase()) ||
+      listing.monthlyRent?.toString().includes(query)
+    );
+    
+    setSearchResults(filtered);
+  };
+
   const endTrial = async (id) => {
     try {
       await api.post(`/listings/${id}/end-trial`);
@@ -157,12 +179,9 @@ const Dashboard = () => {
   const avgViews     = stats.total ? Math.round(stats.views / stats.total) : 0;
 
   return (
-    <div className="min-h-screen" style={{ fontFamily: "'Plus Jakarta Sans', 'DM Sans', sans-serif", background: '#f0f4ff' }}>
-      <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=Syne:wght@700;800&display=swap" rel="stylesheet" />
+    <div className="min-h-screen bg-gray-50">
 
       <style>{`
-        .font-display { font-family:'Syne',sans-serif; }
-
         /* Subtle dot pattern */
         .dot-bg {
           background-image: radial-gradient(circle, #c7d7fb 1px, transparent 1px);
@@ -209,22 +228,39 @@ const Dashboard = () => {
       {/* ══ TOP NAVBAR ══ */}
       <motion.nav
         initial={{ opacity: 0, y: -16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.5 }}
-        className="sticky top-0 z-30 nav-blur flex items-center justify-between px-6 py-3.5"
+        className="relative flex items-center justify-between px-6 py-3.5"
       >
         {/* Logo */}
         <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white font-extrabold text-sm font-display"
+          <div className="w-9 h-9 rounded-xl flex items-center justify-center text-white text-sm font-bold"
             style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', boxShadow: '0 4px 14px rgba(37,99,235,0.35)' }}>S</div>
           <div>
-            <p className="font-extrabold text-sm leading-none font-display" style={{ color: '#1e293b' }}>SLIIT Nest</p>
-            <p className="text-[10px] font-bold tracking-widest" style={{ color: '#94a3b8' }}>OWNER PORTAL</p>
+            <p className="text-sm leading-none font-bold text-gray-800">SLIIT Nest</p>
+            <p className="text-[10px] font-bold tracking-widest text-gray-500">OWNER PORTAL</p>
           </div>
         </div>
 
         {/* Search pill */}
-        <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm cursor-text transition-all hover:border-blue-300"
-          style={{ background: '#f1f5f9', border: '1.5px solid #e2e8f0', minWidth: 220, color: '#94a3b8' }}>
-          <FiSearch size={13} /> <span className="text-xs font-medium">Search listings…</span>
+        <div className="hidden md:flex items-center gap-2 px-4 py-2 rounded-xl text-sm transition-all hover:border-blue-300 bg-gray-100 border border-gray-300"
+        >
+          <FiSearch size={13} />
+          <input
+            type="text"
+            placeholder="Search listings…"
+            value={searchQuery}
+            onChange={(e) => handleSearch(e.target.value)}
+            onFocus={() => setIsSearching(true)}
+            onBlur={() => setTimeout(() => setIsSearching(false), 200)}
+            className="bg-transparent outline-none text-xs font-medium placeholder-gray-500 flex-1 min-w-[150px] text-gray-800"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => handleSearch('')}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <FiX size={13} />
+            </button>
+          )}
         </div>
 
         {/* Right */}
@@ -240,15 +276,98 @@ const Dashboard = () => {
           </button>
           <div className="flex items-center gap-2 px-2.5 py-1.5 rounded-xl"
             style={{ background: '#f1f5f9', border: '1.5px solid #e2e8f0' }}>
-            <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs font-extrabold text-white font-display"
+            <div className="w-6 h-6 rounded-lg flex items-center justify-center text-xs text-white font-bold"
               style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)' }}>{initials}</div>
-            <span className="text-xs font-semibold hidden sm:block" style={{ color: '#475569' }}>{ownerName.split(' ')[0]}</span>
+            <span className="text-xs font-semibold hidden sm:block text-gray-600">{ownerName.split(' ')[0]}</span>
           </div>
         </div>
       </motion.nav>
 
       {/* ══ MAIN CONTENT ══ */}
       <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 py-8 space-y-6">
+
+        {/* ── SEARCH RESULTS ── */}
+        <AnimatePresence>
+          {isSearching && searchQuery && (
+            <motion.div
+              initial={{ opacity: 0, y: -10, scale: 0.98 }}
+              animate={{ opacity: 1, y: 0, scale: 1 }}
+              exit={{ opacity: 0, y: -10, scale: 0.98 }}
+              transition={{ duration: 0.2 }}
+              className="card overflow-hidden"
+              style={{ maxHeight: '400px', overflowY: 'auto' }}
+            >
+              <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: '#e8eeff' }}>
+                <div className="flex items-center gap-2.5">
+                  <div className="w-1 h-6 rounded-full" style={{ background: 'linear-gradient(to bottom,#2563eb,#1d4ed8)' }} />
+                  <h2 className="text-sm font-bold text-gray-800">Search Results</h2>
+                  <span className="px-2.5 py-0.5 rounded-full text-xs font-bold"
+                    style={{ background: '#eff6ff', color: '#2563eb', border: '1.5px solid #bfdbfe' }}>
+                    {searchResults.length}
+                  </span>
+                </div>
+                <button
+                  onClick={() => handleSearch('')}
+                  className="text-xs font-bold transition-colors hover:text-blue-700" 
+                  style={{ color: '#2563eb' }}
+                >
+                  Clear <FiX size={13} className="inline ml-1" />
+                </button>
+              </div>
+
+              <div>
+                {searchResults.length === 0 ? (
+                  <div className="flex flex-col items-center py-8 text-center">
+                    <div className="w-12 h-12 rounded-2xl flex items-center justify-center mb-3 bg-blue-100 border border-blue-300">
+                      <FiSearch size={20} className="text-blue-500" />
+                    </div>
+                    <p className="font-bold text-sm text-gray-600">No matches found</p>
+                    <p className="text-xs mt-1 text-gray-500">Try searching with different keywords</p>
+                  </div>
+                ) : (
+                  searchResults.map((listing, i) => {
+                    const trialStatus = trialStatuses.find(ts => ts._id === listing._id);
+                    const isOnTrial   = trialStatus?.paymentStatus === 'trial' && !trialStatus?.needsPayment;
+                    return (
+                      <motion.div key={listing._id}
+                        initial={{ opacity: 0, x: -12 }} animate={{ opacity: 1, x: 0 }}
+                        transition={{ delay: i * 0.05, duration: 0.2 }}
+                        className="flex flex-col sm:flex-row sm:items-center gap-3 px-6 py-3 border-b row-hover transition-colors duration-150 cursor-default"
+                        style={{ borderColor: '#f1f5f9' }}
+                      >
+                        <div className="flex items-start gap-3.5 flex-1 min-w-0">
+                          <div className="w-10 h-10 rounded-xl flex items-center justify-center shrink-0 mt-0.5 bg-blue-100 border border-blue-300 text-blue-500">
+                            <FiHome size={15} />
+                          </div>
+                          <div className="min-w-0">
+                            <p className="text-sm font-bold truncate text-gray-800">{listing.title}</p>
+                            <p className="text-xs mt-0.5 flex items-center gap-2.5 flex-wrap text-gray-500">
+                              <span className="flex items-center gap-1"><FiPackage size={10} /> {listing.accommodationType}</span>
+                              <span className="flex items-center gap-1"><FiDollarSign size={10} /> Rs. {listing.monthlyRent?.toLocaleString()}/mo</span>
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 flex-wrap shrink-0">
+                          <StatusBadge status={listing.status} />
+                          {isOnTrial && (
+                            <button onClick={() => endTrial(listing._id)}
+                              className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold border transition-all hover:scale-105 bg-orange-100 border-orange-300 text-orange-500">
+                              <FiSkipForward size={10} /> End Trial
+                            </button>
+                          )}
+                          <Link to="/listings"
+                            className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-xs font-bold border transition-all hover:scale-105 bg-blue-100 border-blue-300 text-blue-500">
+                            View <FiChevronRight size={11} />
+                          </Link>
+                        </div>
+                      </motion.div>
+                    );
+                  })
+                )}
+              </div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* ── HERO GREETING BANNER ── */}
         <motion.div
@@ -269,27 +388,24 @@ const Dashboard = () => {
 
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5">
             <div>
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-3"
-                style={{ background: 'rgba(255,255,255,0.18)', color: 'rgba(255,255,255,0.9)' }}>
+              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full text-xs font-bold mb-3 bg-gray-100 text-gray-600">
                 <span className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                 Dashboard Overview
               </div>
-              <h1 className="text-3xl sm:text-4xl font-extrabold text-white leading-tight font-display">
+              <h1 className="text-3xl sm:text-4xl text-white font-bold">
                 Good day, {ownerName} 👋
               </h1>
-              <p className="text-sm mt-1.5 font-medium" style={{ color: 'rgba(219,234,254,0.75)' }}>
+              <p className="text-sm mt-1.5 font-medium text-gray-300">
                 Here's what's happening with your boardings today.
               </p>
             </div>
             <div className="flex gap-2.5 shrink-0">
               <Link to="/listings/add"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
-                style={{ background: 'white', color: '#2563eb', boxShadow: '0 4px 16px rgba(0,0,0,0.1)' }}>
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 bg-white text-blue-500 shadow-md">
                 <FiPlus size={15} /> New Boarding
               </Link>
               <Link to="/listings"
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 hover:-translate-y-0.5"
-                style={{ background: 'rgba(255,255,255,0.15)', color: 'white', border: '1.5px solid rgba(255,255,255,0.3)' }}>
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-200 hover:-translate-y-0.5 bg-gray-100 text-gray-600 border border-gray-300">
                 <FiList size={15} /> All Listings
               </Link>
             </div>
@@ -300,23 +416,23 @@ const Dashboard = () => {
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Listings" value={stats.total}    delay={0.08}
             icon={<FiHome size={17} />}
-            bg="#ffffff" border="#e8eeff"
-            iconBg="#eff6ff" iconColor="#2563eb" valueColor="#1e293b"
+            bg="bg-white" border="border-gray-300"
+            iconBg="bg-blue-100" iconColor="text-blue-500" valueColor="text-gray-800"
             badge="All time" />
           <StatCard label="Approved"       value={stats.approved} delay={0.14}
             icon={<FiCheckCircle size={17} />}
-            bg="#ffffff" border="#d1fae5"
-            iconBg="#f0fdf4" iconColor="#16a34a" valueColor="#15803d"
+            bg="bg-white" border="border-green-300"
+            iconBg="bg-green-100" iconColor="text-green-500" valueColor="text-green-700"
             badge="Live now" />
           <StatCard label="Pending Review" value={stats.pending}  delay={0.20}
             icon={<FiClock size={17} />}
-            bg="#ffffff" border="#fed7aa"
-            iconBg="#fff7ed" iconColor="#ea580c" valueColor="#c2410c"
+            bg="bg-white" border="border-orange-300"
+            iconBg="bg-orange-100" iconColor="text-orange-500" valueColor="text-orange-700"
             badge="In queue" />
           <StatCard label="Total Views"    value={stats.views}    delay={0.26}
             icon={<FiEye size={17} />}
-            bg="#ffffff" border="#e0e7ff"
-            iconBg="#eef2ff" iconColor="#4f46e5" valueColor="#3730a3"
+            bg="bg-white" border="border-blue-300"
+            iconBg="bg-blue-100" iconColor="text-blue-500" valueColor="text-blue-700"
             badge="Impressions" />
         </div>
 
@@ -325,37 +441,33 @@ const Dashboard = () => {
           {expiringListings.length > 0 && (
             <motion.div
               initial={{ opacity: 0, y: 14, scale: 0.99 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, scale: 0.98 }}
-              className="rounded-2xl overflow-hidden border"
-              style={{ background: '#fff5f5', borderColor: '#fecaca', boxShadow: '0 4px 20px rgba(220,38,38,0.08)' }}
+              className="rounded-2xl overflow-hidden border bg-red-100 border-red-300 shadow-md"
             >
-              <div className="flex items-center gap-3 px-6 py-4 border-b" style={{ borderColor: '#fecaca', background: '#fef2f2' }}>
-                <div className="w-8 h-8 rounded-xl flex items-center justify-center" style={{ background: '#fee2e2' }}>
-                  <FiAlertTriangle size={15} style={{ color: '#dc2626' }} />
+              <div className="flex items-center gap-3 px-6 py-4 border-b border-red-300 bg-red-200">
+                <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-red-200">
+                  <FiAlertTriangle size={15} className="text-red-500" />
                 </div>
                 <div>
-                  <h2 className="text-sm font-extrabold font-display" style={{ color: '#b91c1c' }}>Payment Required</h2>
-                  <p className="text-xs font-medium" style={{ color: '#dc2626' }}>{expiringListings.length} listing{expiringListings.length > 1 ? 's' : ''} need attention</p>
+                  <h2 className="text-sm font-bold text-red-800">Payment Required</h2>
+                  <p className="text-xs font-medium text-red-600">{expiringListings.length} listing{expiringListings.length > 1 ? 's' : ''} need attention</p>
                 </div>
-                <div className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold"
-                  style={{ background: '#fee2e2', color: '#dc2626', border: '1.5px solid #fca5a5' }}>
+                <div className="ml-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-red-200 text-red-500 border-red-400">
                   <span className="w-1.5 h-1.5 rounded-full bg-red-500 animate-ping" style={{ animationDuration: '1.5s' }} />
                   Urgent
                 </div>
               </div>
               <div className="p-4 space-y-2.5">
                 {expiringListings.map(listing => (
-                  <div key={listing._id} className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl px-4 py-3.5 border"
-                    style={{ background: 'white', borderColor: '#fecaca' }}>
+                  <div key={listing._id} className="flex flex-col sm:flex-row sm:items-center gap-3 rounded-xl px-4 py-3.5 border bg-white border-red-300">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-bold truncate" style={{ color: '#1e293b' }}>{listing.title}</p>
+                      <p className="text-sm font-bold truncate text-gray-800">{listing.title}</p>
                       {listing.needsPayment
-                        ? <p className="text-xs mt-0.5 font-medium" style={{ color: '#dc2626' }}>Trial expired — activate payment to continue listing</p>
-                        : <p className="text-xs mt-0.5 font-medium" style={{ color: '#ea580c' }}>Expires in <strong>{listing.daysUntilExpiry}</strong> day{listing.daysUntilExpiry !== 1 ? 's' : ''}</p>
+                        ? <p className="text-xs mt-0.5 font-medium text-red-600">Trial expired — activate payment to continue listing</p>
+                        : <p className="text-xs mt-0.5 font-medium text-orange-600">Expires in <strong>{listing.daysUntilExpiry}</strong> day{listing.daysUntilExpiry !== 1 ? 's' : ''}</p>
                       }
                     </div>
                     <button onClick={() => handlePaymentClick(listing._id)}
-                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white shrink-0 transition-all hover:-translate-y-0.5"
-                      style={{ background: 'linear-gradient(135deg,#dc2626,#b91c1c)', boxShadow: '0 4px 14px rgba(220,38,38,0.3)' }}>
+                      className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold text-white shrink-0 transition-all hover:-translate-y-0.5 bg-red-500 text-white shadow-md">
                       <FiCreditCard size={12} /> Pay Now
                     </button>
                   </div>
@@ -376,7 +488,7 @@ const Dashboard = () => {
             <div className="flex items-center justify-between px-6 py-4 border-b" style={{ borderColor: '#e8eeff' }}>
               <div className="flex items-center gap-2.5">
                 <div className="w-1 h-6 rounded-full" style={{ background: 'linear-gradient(to bottom,#2563eb,#1d4ed8)' }} />
-                <h2 className="text-sm font-extrabold font-display" style={{ color: '#1e293b' }}>Recent Listings</h2>
+                <h2 className="text-sm font-bold text-gray-800">Recent Listings</h2>
                 <span className="px-2.5 py-0.5 rounded-full text-xs font-bold"
                   style={{ background: '#eff6ff', color: '#2563eb', border: '1.5px solid #bfdbfe' }}>
                   {recentListings.length}
@@ -405,8 +517,8 @@ const Dashboard = () => {
                     style={{ background: '#eff6ff', border: '1.5px solid #bfdbfe' }}>
                     <FiHome size={28} style={{ color: '#93c5fd' }} />
                   </div>
-                  <p className="font-bold text-sm" style={{ color: '#475569' }}>No listings yet</p>
-                  <p className="text-xs mt-1 mb-5" style={{ color: '#94a3b8' }}>Add your first boarding to get started</p>
+                  <p className="font-bold text-sm text-gray-600">No listings yet</p>
+                  <p className="text-xs mt-1 mb-5 text-gray-500">Add your first boarding to get started</p>
                   <Link to="/listings/add"
                     className="inline-flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-white"
                     style={{ background: 'linear-gradient(135deg,#2563eb,#1d4ed8)', boxShadow: '0 4px 16px rgba(37,99,235,0.3)' }}>
@@ -430,8 +542,8 @@ const Dashboard = () => {
                           <FiHome size={15} />
                         </div>
                         <div className="min-w-0">
-                          <p className="text-sm font-bold truncate" style={{ color: '#1e293b' }}>{listing.title}</p>
-                          <p className="text-xs mt-0.5 flex items-center gap-2.5 flex-wrap" style={{ color: '#94a3b8' }}>
+                          <p className="text-sm font-bold truncate text-gray-800">{listing.title}</p>
+                          <p className="text-xs mt-0.5 flex items-center gap-2.5 flex-wrap text-gray-500">
                             <span className="flex items-center gap-1"><FiPackage size={10} /> {listing.accommodationType}</span>
                             <span className="flex items-center gap-1"><FiDollarSign size={10} /> Rs. {listing.monthlyRent?.toLocaleString()}/mo</span>
                           </p>
@@ -468,7 +580,7 @@ const Dashboard = () => {
             <div className="card overflow-hidden">
               <div className="flex items-center gap-2.5 px-5 py-4 border-b" style={{ borderColor: '#e8eeff' }}>
                 <div className="w-1 h-6 rounded-full" style={{ background: 'linear-gradient(to bottom,#2563eb,#1d4ed8)' }} />
-                <h2 className="text-sm font-extrabold font-display" style={{ color: '#1e293b' }}>Quick Actions</h2>
+                <h2 className="text-sm font-bold text-gray-800">Quick Actions</h2>
               </div>
               <div className="p-3 space-y-1.5">
                 <ActionBtn to="/listings/add" delay={0.42} icon={<FiPlus size={15} />}     label="Add New Boarding"  desc="List a new property"       color="#2563eb" bg="#eff6ff" />
@@ -494,7 +606,7 @@ const Dashboard = () => {
                   style={{ background: 'rgba(255,255,255,0.18)', border: '1px solid rgba(255,255,255,0.25)' }}>
                   <FiActivity size={14} className="text-white" />
                 </div>
-                <p className="text-sm font-extrabold text-white font-display">Performance</p>
+                <p className="text-sm text-white font-bold">Performance</p>
               </div>
 
               <div className="space-y-4 relative z-10">
@@ -505,7 +617,7 @@ const Dashboard = () => {
                   <div key={label}>
                     <div className="flex justify-between items-center mb-2">
                       <span className="text-xs font-semibold" style={{ color: 'rgba(219,234,254,0.7)' }}>{label}</span>
-                      <span className="text-xs font-extrabold text-white">{display}</span>
+                      <span className="text-xs text-white">{display}</span>
                     </div>
                     <div className="h-2 rounded-full overflow-hidden" style={{ background: track }}>
                       <motion.div className="h-full rounded-full"
@@ -525,7 +637,7 @@ const Dashboard = () => {
                   <div key={s.label} className="rounded-xl p-3 text-center"
                     style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.15)' }}>
                     <span className="text-xl block mb-1">{s.icon}</span>
-                    <p className="text-2xl font-extrabold font-display" style={{ color: s.color }}>{s.value}</p>
+                    <p className="text-2xl font-bold" style={{ color: s.color }}>{s.value}</p>
                     <p className="text-[10px] font-semibold mt-0.5" style={{ color: 'rgba(219,234,254,0.55)' }}>{s.label}</p>
                   </div>
                 ))}
@@ -540,13 +652,13 @@ const Dashboard = () => {
                 backgroundImage: 'repeating-linear-gradient(45deg,#ea580c 0,#ea580c 1px,transparent 0,transparent 50%)',
                 backgroundSize: '8px 8px'
               }} />
-              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-sm font-extrabold text-white shrink-0 font-display"
+              <div className="w-11 h-11 rounded-xl flex items-center justify-center text-sm text-white shrink-0 font-bold"
                 style={{ background: 'linear-gradient(135deg,#ea580c,#dc2626)', boxShadow: '0 4px 14px rgba(234,88,12,0.35)' }}>
                 {initials}
               </div>
               <div className="flex-1 min-w-0 relative z-10">
-                <p className="font-extrabold text-sm truncate font-display" style={{ color: '#1e293b' }}>{ownerName}</p>
-                <p className="text-xs font-medium" style={{ color: '#ea580c' }}>Boarding Owner · Active</p>
+                <p className="text-sm truncate font-bold text-gray-800">{ownerName}</p>
+                <p className="text-xs font-medium text-orange-500">Boarding Owner · Active</p>
               </div>
               <div className="flex gap-px shrink-0 relative z-10">
                 {[1,2,3,4,5].map(s => <span key={s} style={{ color: '#f59e0b', fontSize: '11px' }}>★</span>)}
@@ -560,7 +672,7 @@ const Dashboard = () => {
                 <div className="w-7 h-7 rounded-lg flex items-center justify-center" style={{ background: '#dcfce7' }}>
                   <FiStar size={13} style={{ color: '#16a34a' }} />
                 </div>
-                <p className="text-xs font-extrabold font-display" style={{ color: '#15803d' }}>Pro Tip</p>
+                <p className="text-xs font-bold text-green-700">Pro Tip</p>
               </div>
               <p className="text-xs leading-relaxed" style={{ color: '#166534' }}>
                 Listings with photos get <strong>3× more views</strong>. Upload high-quality images to attract more tenants.
