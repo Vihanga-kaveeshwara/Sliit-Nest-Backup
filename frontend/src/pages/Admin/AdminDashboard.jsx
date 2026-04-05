@@ -83,11 +83,16 @@ const AdminDashboard = () => {
   };
 
   const handleApprovePayment = async (paymentId) => {
+    console.log('Approving payment with ID:', paymentId);
     try {
-      await api.put(`/payments/${paymentId}/approve`);
+      console.log('Making API call to:', `/payments/${paymentId}/approve`);
+      const response = await api.put(`/payments/${paymentId}/approve`);
+      console.log('API response:', response.data);
       toast.success('Payment approved and listing created');
       fetchPayments();
     } catch (error) {
+      console.error('Error approving payment:', error);
+      console.error('Error response:', error.response?.data);
       toast.error(error.response?.data?.message || 'Failed to approve payment');
     }
   };
@@ -96,11 +101,16 @@ const AdminDashboard = () => {
     const reason = prompt('Please provide a reason for rejection:');
     if (!reason) return;
 
+    console.log('Rejecting payment with ID:', paymentId, 'Reason:', reason);
     try {
-      await api.put(`/payments/${paymentId}/reject`, { adminNotes: reason });
+      console.log('Making API call to:', `/payments/${paymentId}/reject`);
+      const response = await api.put(`/payments/${paymentId}/reject`, { adminNotes: reason });
+      console.log('API response:', response.data);
       toast.success('Payment rejected');
       fetchPayments();
     } catch (error) {
+      console.error('Error rejecting payment:', error);
+      console.error('Error response:', error.response?.data);
       toast.error(error.response?.data?.message || 'Failed to reject payment');
     }
   };
@@ -182,7 +192,7 @@ const AdminDashboard = () => {
                         <div>
                           <div className="text-sm font-medium text-gray-900">{payment.listingId?.title || 'N/A'}</div>
                           <div className="text-sm text-gray-500">{payment.listingId?.address || 'N/A'}</div>
-                          <div className="text-xs text-gray-400">by {payment.user.firstName} {payment.user.lastName}</div>
+                          <div className="text-xs text-gray-400">by {payment.user?.firstName || payment.user?.email?.split('@')[0] || 'Unknown'} {payment.user?.lastName || ''}</div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">

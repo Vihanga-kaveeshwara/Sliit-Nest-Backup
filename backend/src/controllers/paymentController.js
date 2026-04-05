@@ -99,12 +99,27 @@ exports.getPayments = async (req, res, next) => {
       .populate('reviewedBy', 'firstName lastName')
       .sort({ createdAt: -1 });
 
+    // Filter out payments with missing user references
+    const validPayments = payments.filter(payment => {
+      if (!payment.user) {
+        console.log('Filtering out payment with missing user:', payment._id);
+        return false;
+      }
+      return true;
+    });
+
+    console.log('Valid payments found:', validPayments.length);
+    validPayments.forEach(payment => {
+      console.log('Payment user:', payment.user?.firstName, payment.user?.lastName);
+    });
+
     res.status(200).json({
       success: true,
-      count: payments.length,
-      data: payments
+      count: validPayments.length,
+      data: validPayments
     });
   } catch (error) {
+    console.error('Error in getPayments:', error);
     next(error);
   }
 };
@@ -148,17 +163,24 @@ exports.getPayment = async (req, res, next) => {
 // @access  Private (Admin only)
 exports.approvePayment = async (req, res, next) => {
   try {
-    const { adminNotes } = req.body;
+    const { adminNotes } = req.body || {};
+    console.log('Approving payment with ID:', req.params.id);
+    console.log('Admin user:', req.user);
+    console.log('Request body:', req.body);
 
     const payment = await Payment.findById(req.params.id);
     if (!payment) {
+      console.log('Payment not found');
       return res.status(404).json({
         success: false,
         message: 'Payment not found'
       });
     }
 
+    console.log('Payment found:', payment);
+
     if (payment.status !== 'pending') {
+      console.log('Payment not pending:', payment.status);
       return res.status(400).json({
         success: false,
         message: `Payment is already ${payment.status}`
@@ -166,6 +188,7 @@ exports.approvePayment = async (req, res, next) => {
     }
 
     // Update the listing payment status
+    console.log('Updating listing payment status for listing ID:', payment.listingId);
     await Listing.findByIdAndUpdate(payment.listingId, {
       paymentStatus: 'paid',
       lastPaymentDate: new Date()
@@ -173,17 +196,19 @@ exports.approvePayment = async (req, res, next) => {
 
     // Update payment status
     payment.status = 'approved';
-    payment.adminNotes = adminNotes || '';
+    payment.adminNotes = adminNotes || 'Approved by admin';
     payment.reviewedBy = req.user.id;
     payment.reviewedAt = new Date();
     await payment.save();
 
+    console.log('Payment approved successfully');
     res.status(200).json({
       success: true,
       data: payment,
       message: 'Payment approved and listing updated successfully'
     });
   } catch (error) {
+    console.error('Error in approvePayment:', error);
     next(error);
   }
 };
